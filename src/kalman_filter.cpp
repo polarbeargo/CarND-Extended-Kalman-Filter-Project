@@ -1,5 +1,5 @@
 #include "kalman_filter.h"
-
+#define PI 3.14159265
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -50,25 +50,18 @@ void KalmanFilter::UpdateEKF(const VectorXd &z)
     * update the state by using Extended Kalman Filter equations
   */
   double slope = sqrt(pow(x_[0], 2) + pow(x_[1], 2));
-  double phi;
-  double slope_rate;
+  double phi = atan2(x_[1], x_[0]);
+  double slope_rate = ((x_[0] * x_[2] + x_[1] * x_[3]) / slope);
 
-  if (fabs(slope > 0.001))
-  {
-    phi = atan(x_[1] / x_[0]);
-    slope_rate = ((x_[0] * x_[2] + x_[1] * x_[3]) / slope);
-  }
-  else
-  {
-    phi = 0;
-    slope_rate = 0;
-  }
-
-  MatrixXd z_pred(3, 1);
+  VectorXd z_pred(3);
   z_pred << slope, phi, slope_rate;
 
   //new estimate
   VectorXd y = z - z_pred;
+  if (y[1] > PI)
+    y[1] -= 2.f * PI;
+  if (y[1] < -PI)
+    y[1] += 2.f * PI;
   UpdateY(y);
 }
 
