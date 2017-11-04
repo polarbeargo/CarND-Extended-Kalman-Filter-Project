@@ -59,8 +59,24 @@ void KalmanFilter::UpdateEKF(const VectorXd &z)
   TODO:
     * update the state by using Extended Kalman Filter equations
   */
-  VectorXd z_pred = H_ * x_;
-  VectorXd y = z - z_pred;
+  double slope = sqrt(pow(x_[0], 2) + pow(x_[1], 2));
+  double phi;
+  double slope_rate;
+
+  if (fabs(slope > 0.001))
+  {
+    phi = atan(x_[1] / x_[0]);
+    slope_rate = ((x_[0] * x_[2] + x_[1] * x_[3]) / slope);
+  }
+  else
+  {
+    phi = 0;
+    slope_rate = 0;
+  }
+
+  MatrixXd z_pred(3, 1);
+  z_pred << slope, phi, slope_rate;
+
   MatrixXd Ht = H_.transpose();
   MatrixXd PHt = P_ * Ht;
   MatrixXd S = H_ * PHt + R_;
@@ -68,6 +84,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z)
   MatrixXd K = PHt * Si;
 
   //new estimate
+  VectorXd y = z - z_pred;
   x_ = x_ + (K * y);
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
