@@ -49,6 +49,10 @@ void KalmanFilter::UpdateEKF(const VectorXd &z)
   TODO:
     * update the state by using Extended Kalman Filter equations
   */
+  //make sure, that a zero measurement does not result in a divide by zero
+  if (x_[1] == 0. && x_[0] == 0.)
+    return;
+
   double slope = sqrt(pow(x_[0], 2) + pow(x_[1], 2));
   double phi = atan2(x_[1], x_[0]);
   double slope_rate = ((x_[0] * x_[2] + x_[1] * x_[3]) / slope);
